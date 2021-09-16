@@ -6,6 +6,11 @@ Steps to get Terraform working with Azure Cloud:
 * [configure Azure Cloud shell with bash](https://docs.microsoft.com/en-us/azure/developer/terraform/get-started-cloud-shell-bash?tabs=bash)
 * [configure Terraform state storage in Azure Cloud](https://docs.microsoft.com/en-us/azure/developer/terraform/store-state-in-azure-storage?tabs=azure-cli)
 
+To setup Azure Container Registry:
+```
+$ ./Terraform/setup-azure-acr.sh
+```
+
 To setup state storage for Terraform in Azure Cloud:
 ```
 $ ./Terraform/setup-azure-storage.sh

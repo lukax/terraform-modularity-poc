@@ -26,7 +26,7 @@ provider "azurerm" {
 
 }
 provider "azuread" {
- version = "=0.7.0"
+ # version = "=0.7.0"
 }
 
 data "azurerm_user_assigned_identity" "assigned_identity_acr_pull" {
