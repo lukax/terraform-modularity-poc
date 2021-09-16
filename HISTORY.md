@@ -1,4 +1,28 @@
-## v0.1.0,
+# v0.2.0
+
+* add `Terraform/webapp.tf` file
+ 
+Steps to get Terraform working with Azure Cloud:
+* [configure Azure Cloud shell with bash](https://docs.microsoft.com/en-us/azure/developer/terraform/get-started-cloud-shell-bash?tabs=bash)
+* [configure Terraform state storage in Azure Cloud](https://docs.microsoft.com/en-us/azure/developer/terraform/store-state-in-azure-storage?tabs=azure-cli)
+
+To setup state storage for Terraform in Azure Cloud:
+```
+$ ./Terraform/setup-azure-storage.sh
+```
+Terraform state is used to reconcile deployed resources with Terraform configurations. State allows Terraform to know what Azure resources to add, update, or delete.
+
+* To initialize the configuration
+``` 
+$ terraform init 
+```
+
+* To run the configuration
+``` 
+$ terraform apply 
+```
+
+# v0.1.0
 
 
 #### Highlights
