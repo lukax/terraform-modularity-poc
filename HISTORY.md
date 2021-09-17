@@ -2,8 +2,12 @@
 
 ## Setting up monitoring
 
-TODO...
+Azure Application Insights allows to collect traces, requests and exceptions very easily and build analytics queries and dashboard for visualization it comes with a Python SDK that supports direct integration with the Flask Framework.
 
+* set up Application Insights for Flask web app
+* add Terraform resource for Application Insights and load ```APPINSIGHTS_INSTRUMENTATIONKEY``` environment variable inside Flask web app
+* click on the Analytics button in the Azure portal to see generated data
+ 
 # v0.1.4
 
 ## Building a CI/CD with Azure Pipelines 

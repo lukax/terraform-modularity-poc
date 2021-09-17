@@ -1,14 +1,18 @@
 from flask import Flask
 from flask import jsonify
 from flask import request
+from applicationinsights.flask.ext import AppInsights
+import os
 
 
 app_name = 'comentarios'
 app = Flask(app_name)
 app.debug = True
 
-comments = {}
+app.config['APPINSIGHTS_INSTRUMENTATIONKEY'] = os.environ.get('APPINSIGHTS_INSTRUMENTATIONKEY')
+appinsights = AppInsights(app)
 
+comments = {}
 
 @app.route('/api/comment/new', methods=['POST'])
 def api_comment_new():
@@ -49,3 +53,9 @@ def api_comment_list(content_id):
                 'message': message,
                 }
         return jsonify(response), 404
+
+# force flushing application insights handler after each request
+@app.after_request
+def after_request(response):
+    appinsights.flush()
+    return response
