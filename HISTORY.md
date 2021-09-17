@@ -1,3 +1,20 @@
+# v0.1.5
+
+## Setting up monitoring
+
+TODO...
+
+# v0.1.4
+
+## Building a CI/CD with Azure Pipelines 
+
+* Connect Azure DevOps to the GitHub repository
+* Configure the pipeline to build app Docker-compose image
+* Set a branch trigger master/develop for either production/QA following the Git Flow branching model
+* Select Azure subscription and container registry
+* Set $(AZURE_SUBSCRIPTION) and $(AZURE_CONTAINER_REGISTRY) environment [variables for the pipeline](https://docs.microsoft.com/pt-br/azure/devops/pipelines/process/variables?view=azure-devops&tabs=yaml%2Cbatch)
+* Save the pipeline YAML file and run
+
 # v0.1.3
 
 ## Tagging images and deploying to production
@@ -19,7 +36,7 @@ $ curl -sv https://desafio-devops-service-container.azurewebsites.net/api/commen
 
 # v0.1.2
 
-## Setting up IaC with Terraform
+## Setting up IaaS with Azure Cloud and IaC with Terraform
 
 * add `Terraform/webapp.tf` file
  

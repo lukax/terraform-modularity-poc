@@ -1,0 +1,12 @@
+version: "3.3"
+   
+services:
+  api:
+    image: ldconsulting.azurecr.io/desafio-devops:latest
+    build: 
+      context: .
+      dockerfile: ./Dockerfile
+    volumes:
+      - .:/usr/src
+    ports:
+      - "8000:8000"
