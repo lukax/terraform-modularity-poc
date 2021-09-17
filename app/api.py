@@ -59,7 +59,7 @@ def api_comment_list(content_id):
 def health():
 
     response = {
-            'message': 'Healthy',
+            'message': 'Healthy!',
             }
     return jsonify(response), 200
 

@@ -10,19 +10,30 @@
 locals {
  env_variables = {
    DOCKER_ENABLE_CI                      = true
-   # DOCKER_REGISTRY_SERVER_URL            = "https://desafio_devops.azurecr.io"
-   # DOCKER_REGISTRY_SERVER_USERNAME       = "desafio_devops"
-   # DOCKER_REGISTRY_SERVER_PASSWORD       = "**************"
-   # ACR_SUBSCRIPTION_ID                   = "**************"
-
-   APPINSIGHTS_INSTRUMENTATIONKEY     = azurerm_application_insights.appinsights.instrumentation_key
+   DOCKER_REGISTRY_SERVER_URL            = var.DOCKER_REGISTRY_SERVER_URL
+   DOCKER_REGISTRY_SERVER_USERNAME       = var.DOCKER_REGISTRY_SERVER_USERNAME
+   DOCKER_REGISTRY_SERVER_PASSWORD       = var.DOCKER_REGISTRY_SERVER_PASSWORD
+   ACR_SUBSCRIPTION_ID                   = var.acr_subscription_id
+   APPINSIGHTS_INSTRUMENTATIONKEY        = azurerm_application_insights.appinsights.instrumentation_key
  }
+}
+
+variable "DOCKER_REGISTRY_SERVER_URL" {
+  type = string
+  default = "https://ldconsulting.azurecr.io"
+}
+
+variable "DOCKER_REGISTRY_SERVER_USERNAME" {
+  type = string
+  default = "ldconsulting"
+}
+
+variable "DOCKER_REGISTRY_SERVER_PASSWORD" {
+  type = string
 }
 
 variable "acr_subscription_id" {
   type = string
-
-  # TODO load from environment variable
   default = "575a33d7-d462-4774-ae90-a4e716e432c3"
 }
 
@@ -154,7 +165,7 @@ resource "azurerm_container_registry_webhook" "webhook_staging" {
   registry_name       = "ldconsulting" # azurerm_container_registry.acr.name
   location            = "East US" # azurerm_resource_group.rg.location
 
-  service_uri = "https://${azurerm_app_service_slot.appsvc_staging.site_credential.0.username}:${azurerm_app_service_slot.appsvc_staging.site_credential.0.password}@${azurerm_app_service_slot.appsvc_staging.name}.scm.azurewebsites.net/docker/hook"
+  service_uri = "https://${azurerm_app_service_slot.appsvc_staging.site_credential.0.username}:${azurerm_app_service_slot.appsvc_staging.site_credential.0.password}@${azurerm_app_service.appsvc_default.name}-${azurerm_app_service_slot.appsvc_staging.name}.scm.azurewebsites.net/docker/hook"
   status      = "enabled"
   scope       = "desafio-devops:latest"
   actions     = ["push"]
