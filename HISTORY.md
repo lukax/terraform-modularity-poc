@@ -1,6 +1,6 @@
 # v0.1.5
 
-## Setting up monitoring
+## Setting up monitoring with Azure Application Insights
 
 Azure Application Insights allows to collect traces, requests and exceptions very easily and build analytics queries and dashboard for visualization it comes with a Python SDK that supports direct integration with the Flask Framework.
 
@@ -21,7 +21,7 @@ Azure Application Insights allows to collect traces, requests and exceptions ver
 
 # v0.1.3
 
-## Tagging images and deploying to production
+## Tagging Docker images and deploying to production
 
 Tag the docker image:
 ```

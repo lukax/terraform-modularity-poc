@@ -54,6 +54,16 @@ def api_comment_list(content_id):
                 }
         return jsonify(response), 404
 
+
+@app.route('/health')
+def health():
+
+    response = {
+            'message': 'Healthy',
+            }
+    return jsonify(response), 200
+
+
 # force flushing application insights handler after each request
 @app.after_request
 def after_request(response):
