@@ -18,6 +18,11 @@ locals {
  }
 }
 
+variable "DOCKER_REGISTRY_NAME" {
+  type = string
+  default = "ldconsulting"
+}
+
 variable "DOCKER_REGISTRY_SERVER_URL" {
   type = string
   default = "https://ldconsulting.azurecr.io"
@@ -68,6 +73,22 @@ resource "azurerm_user_assigned_identity" "example" {
   name = "User_ACR_pull"
 }
 
+#
+# TODO: uncomment this section in order to provision the Azure Container Registry
+#
+# resource "azurerm_container_registry" "acr" {
+#   name                = var.DOCKER_REGISTRY_NAME
+#   resource_group_name = "desafio-devops"
+#   location            = "East US"
+#   sku                 = "Premium"
+#   identity {
+#     type = "UserAssigned"
+#     identity_ids = [
+#       azurerm_user_assigned_identity.example.id
+#     ]
+#   }
+# }
+
 # App service plan, define set of computing resources for the web app to run
 resource "azurerm_app_service_plan" "desafio-devops-service-plan" {
  name                = "desafio-devops-service-plan"
@@ -98,7 +119,7 @@ resource "azurerm_app_service" "appsvc_default" {
    # Linux App Framework and version for the App Service. Possible options are a Docker container (DOCKER|<user/image:tag>), 
    # a base-64 encoded Docker Compose file (COMPOSE|${filebase64("compose.yml")}) 
    # or a base-64 encoded Kubernetes Manifest (KUBE|${filebase64("kubernetes.yml")}).
-   linux_fx_version  = "DOCKER|ldconsulting.azurecr.io/desafio-devops:prod" 
+   linux_fx_version  = "DOCKER|${var.DOCKER_REGISTRY_NAME}.azurecr.io/desafio-devops:prod" 
 
    # health check required in order that internal app service plan loadbalancer do not loadbalance on instance down
    health_check_path = "/health" 
@@ -128,7 +149,7 @@ resource "azurerm_app_service_slot" "appsvc_staging" {
    # Linux App Framework and version for the App Service. Possible options are a Docker container (DOCKER|<user/image:tag>), 
    # a base-64 encoded Docker Compose file (COMPOSE|${filebase64("compose.yml")}) 
    # or a base-64 encoded Kubernetes Manifest (KUBE|${filebase64("kubernetes.yml")}).
-   linux_fx_version  = "DOCKER|ldconsulting.azurecr.io/desafio-devops:latest" 
+   linux_fx_version  = "DOCKER|${var.DOCKER_REGISTRY_NAME}.azurecr.io/desafio-devops:latest" 
 
    # health check required in order that internal app service plan loadbalancer do not loadbalance on instance down
    health_check_path = "/health" 
@@ -146,7 +167,7 @@ resource "azurerm_app_service_slot" "appsvc_staging" {
 resource "azurerm_container_registry_webhook" "webhook_prod" {
   name                = "defaultwebhookprod"
   resource_group_name = "desafio-devops"
-  registry_name       = "ldconsulting" # azurerm_container_registry.acr.name
+  registry_name       = var.DOCKER_REGISTRY_NAME # azurerm_container_registry.acr.name
   location            = "East US" # azurerm_resource_group.rg.location
 
   service_uri = "https://${azurerm_app_service.appsvc_default.site_credential.0.username}:${azurerm_app_service.appsvc_default.site_credential.0.password}@${azurerm_app_service.appsvc_default.name}.scm.azurewebsites.net/docker/hook"
@@ -162,7 +183,7 @@ resource "azurerm_container_registry_webhook" "webhook_prod" {
 resource "azurerm_container_registry_webhook" "webhook_staging" {
   name                = "defaultwebhookstaging"
   resource_group_name = "desafio-devops"
-  registry_name       = "ldconsulting" # azurerm_container_registry.acr.name
+  registry_name       = var.DOCKER_REGISTRY_NAME # azurerm_container_registry.acr.name
   location            = "East US" # azurerm_resource_group.rg.location
 
   service_uri = "https://${azurerm_app_service_slot.appsvc_staging.site_credential.0.username}:${azurerm_app_service_slot.appsvc_staging.site_credential.0.password}@${azurerm_app_service.appsvc_default.name}-${azurerm_app_service_slot.appsvc_staging.name}.scm.azurewebsites.net/docker/hook"
