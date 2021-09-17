@@ -1,3 +1,24 @@
+# v0.1.6
+
+## Wrapping it all up with the first app deploy
+
+Create the infrasctruture in Azure Cloud:
+```
+$ cd Terraform && terraform apply
+```
+
+Setup Azure Pipelines by referencing ```azure-pipelines.yml``` file.
+
+Do a git push on the ```develop``` branch and wait for the CI/CD to trigger a new build, after that you should have the app running in a few minutes!
+
+You can also deploy the app through the command line using docker compose directly:
+```
+$ docker-compose -f docker-compose.yml -f docker-compose.override.prod.yml build
+$ az acr login --name "desafiodevopsacr" --username "desafiodevopsacr"
+$ docker-compose -f docker-compose.yml -f docker-compose.override.prod.yml push
+```
+
+
 # v0.1.5
 
 ## Setting up monitoring with Azure Application Insights
@@ -40,12 +61,12 @@ $ az monitor app-insights metrics show --resource-group desafio-devops --app des
 
 Tag the docker image:
 ```
-$ docker tag desafio-devops:latest ldconsulting.azurecr.io/desafio-devops:latest
+$ docker tag desafio-devops:latest desafiodevopsacr.azurecr.io/desafio-devops:latest
 ```
 
 Push the docker image to Azure Container Registry:
 ```
-$ docker push ldconsulting.azurecr.io/desafio-devops:latest
+$ docker push desafiodevopsacr.azurecr.io/desafio-devops:latest
 ```
 
 Test the production app with a sample HTTP request

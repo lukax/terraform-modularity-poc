@@ -1,7 +1,7 @@
 #!/bin/bash
 
 RESOURCE_GROUP_NAME=desafio-devops
-ACR_REGISTRY_NAME=ldconsulting
+ACR_REGISTRY_NAME=desafiodevopsacr
 APP_ID=CHANGE_THIS # TODO <insert here>
 
 az acr create --name $ACR_REGISTRY_NAME --resource-group $RESOURCE_GROUP_NAME --sku Standard
