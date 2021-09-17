@@ -17,8 +17,8 @@ terraform {
 variable "acr_subscription_id" {
   type = string
 
-  # TODO use environment varariable
-  default = "<CHANGE_HERE>"
+  # TODO use environment variable
+  default = "575a33d7-d462-4774-ae90-a4e716e432c3"
 }
 
 provider "azurerm" {
@@ -69,12 +69,14 @@ locals {
    DOCKER_ENABLE_CI                      = true
    DOCKER_REGISTRY_SERVER_URL            = "https://ldconsulting.azurecr.io"
    DOCKER_REGISTRY_SERVER_USERNAME       = "ldconsulting"
-   DOCKER_REGISTRY_SERVER_PASSWORD       = "<CHANGE_THIS>"
+   DOCKER_REGISTRY_SERVER_PASSWORD       = "J0V6zJSV=3sDCnCtAMCmeQSYzxQA7475"
+
+   APPINSIGHTS_INSTRUMENTATIONKEY     = azurerm_application_insights.appinsights.instrumentation_key
  }
 }
 
 # App service 
-resource "azurerm_app_service" "desafio-devops-service-container" {
+resource "azurerm_app_service" "appsvc_default" {
  name                    = "desafio-devops-service-container"
  location                = "East US"
  resource_group_name     = "desafio-devops"
@@ -103,9 +105,9 @@ resource "azurerm_app_service" "desafio-devops-service-container" {
 }
 
 # setup staging slot
-resource "azurerm_app_service_slot" "desafio-devops-service-container_staging" {
+resource "azurerm_app_service_slot" "appsvc_staging" {
  name                    = "staging"
- app_service_name        = azurerm_app_service.desafio-devops-service-container.name
+ app_service_name        = azurerm_app_service.appsvc_default.name
  location                = "East US"
  resource_group_name     = "desafio-devops"
  app_service_plan_id     = azurerm_app_service_plan.desafio-devops-service-plan.id
@@ -125,23 +127,45 @@ resource "azurerm_app_service_slot" "desafio-devops-service-container_staging" {
  app_settings = local.env_variables
 }
 
+# manages an Azure Container Registry Webhook.
+resource "azurerm_container_registry_webhook" "webhook" {
+  name                = "defaultwebhook"
+  resource_group_name = "desafio-devops"
+  registry_name       = "ldconsulting" # azurerm_container_registry.acr.name
+  location            = "East US" # azurerm_resource_group.rg.location
+
+  service_uri = "https://${azurerm_app_service.appsvc_default.site_credential.0.username}:${azurerm_app_service.appsvc_default.site_credential.0.password}@${azurerm_app_service.appsvc_default.name}.scm.azurewebsites.net/docker/hook"
+  status      = "enabled"
+  scope       = "desafio-devops:*"
+  actions     = ["push"]
+  custom_headers = {
+    "Content-Type" = "application/json"
+  }
+}
+
 # setup monitoring
 # env variables needed:
-# AZURE_MONITOR_INSTRUMENTATION_KEY = azurerm_application_insights.desafio-devops-insight.instrumentation_key
-resource "azurerm_application_insights" "desafio-devops-insight" {
- name                = "desafio-devops-insight"
+# APPINSIGHTS_INSTRUMENTATIONKEY = azurerm_application_insights.appinsights.instrumentation_key
+resource "azurerm_application_insights" "appinsights" {
+ name                = "desafio-devops-appinsights"
  location            = "East US"
  resource_group_name = "desafio-devops"
  application_type    = "Node.JS" # Depends on the application
  disable_ip_masking  = true
- retention_in_days   = 730
 }
 
+# output "instrumentation_key" {
+#   value = azurerm_application_insights.appinsights.instrumentation_key
+# }
+
+# output "appinsights_app_id" {
+#   value = azurerm_application_insights.appinsights.app_id
+# }
 
 # Once applied, you can see the resources created in azure:
-# - App service plan: desafio-devops-service-plan
+# App service plan: desafio-devops-service-plan
 # App service: desafio-devops-service-container
-# App insight: desafio-devops-insight
+# App insight: desafio-devops-appinsights
 
 # Now we are able to deploy from code, an high available application in an Azure app service 
 # with the required monitoring for production use with the possibility of using blue/green deployment 
