@@ -1,0 +1,5 @@
+version: "3.3"
+   
+services:
+  api:
+    image: ldconsulting.azurecr.io/desafio-devops:latest

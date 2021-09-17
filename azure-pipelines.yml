@@ -3,7 +3,7 @@
 # https://docs.microsoft.com/azure/devops/pipelines/languages/docker
 
 trigger:
-- develop
+ - develop # TODO: override trigger for master branch in Azure Pipelines
 
 resources:
 - repo: self
@@ -27,10 +27,8 @@ stages:
     - task: DockerCompose@0
       displayName: Build image to container registry
       inputs:
-        containerregistrytype: 'Azure Container Registry'
-        azureSubscription: $(AZURE_SUBSCRIPTION)
-        azureContainerRegistry: $(AZURE_CONTAINER_REGISTRY)
         dockerComposeFile: '**/docker-compose.yml'
+        additionalDockerComposeFiles: 'docker-compose.override.$(APP_ENV).yml'
         action: 'Build services'
 
     - task: DockerCompose@0
@@ -40,5 +38,6 @@ stages:
         azureSubscription: $(AZURE_SUBSCRIPTION)
         azureContainerRegistry: $(AZURE_CONTAINER_REGISTRY)
         dockerComposeFile: '**/docker-compose.yml'
+        additionalDockerComposeFiles: 'docker-compose.override.$(APP_ENV).yml'
         action: 'Push services'
 
