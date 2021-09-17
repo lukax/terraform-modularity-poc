@@ -8,6 +8,21 @@ Azure Application Insights allows to collect traces, requests and exceptions ver
 * add Terraform resource for Application Insights and load ```APPINSIGHTS_INSTRUMENTATIONKEY``` environment variable inside Flask web app
 * click on the Analytics button in the Azure portal to see generated data
  
+To execute a simple query over past 1 hour:
+```
+$ az monitor app-insights query --resource-group desafio-devops --app desafio-devops-appinsights --analytics-query 'requests | summarize count() by bin(timestamp, 1h)' --offset 1h
+```
+
+View metadata for all the available metrics:
+```
+$ az monitor app-insights metrics get-metadata --resource-group desafio-devops --app desafio-devops-appinsights
+```
+
+View the count of failed requests:
+```
+$ az monitor app-insights metrics show --resource-group desafio-devops --app desafio-devops-appinsights --metric requests/failed
+```
+
 # v0.1.4
 
 ## Building a CI/CD with Azure Pipelines 
