@@ -1,4 +1,25 @@
-# v0.2.0
+# v0.1.3
+
+## Tagging images and deploying to production
+
+Tag the docker image:
+```
+$ docker tag desafio-devops:latest ldconsulting.azurecr.io/desafio-devops:latest
+```
+
+Push the docker image to Azure Container Registry:
+```
+$ docker push ldconsulting.azurecr.io/desafio-devops:latest
+```
+
+Test the production app with a sample HTTP request
+```
+$ curl -sv https://desafio-devops-service-container.azurewebsites.net/api/comment/new -X POST -H 'Content-Type: application/json' -d '{"email":"alice@example.com","comment":"first post!","content_id":1}'
+```
+
+# v0.1.2
+
+## Setting up IaC with Terraform
 
 * add `Terraform/webapp.tf` file
  
@@ -17,20 +38,19 @@ $ ./Terraform/setup-azure-storage.sh
 ```
 Terraform state is used to reconcile deployed resources with Terraform configurations. State allows Terraform to know what Azure resources to add, update, or delete.
 
-* To initialize the configuration
+In order to initialize the Terraform configuration:
 ``` 
 $ terraform init 
 ```
 
-* To run the configuration
+And to run the Terraform configuration:
 ``` 
 $ terraform apply 
 ```
 
-# v0.1.0
+# v0.1.1
 
-
-#### Highlights
+## Bootstrapping
 
 * add Dockerfile with an Alpine-based Docker image for Python 3.9.6, set a working directory and add environment variables, updated pip, copied over requirements.txt file, installed dependencies and copied the project files itself.
 * setup entrypoint.sh file which we can perform some verifications and later run the Gunicorn HTTP server.
