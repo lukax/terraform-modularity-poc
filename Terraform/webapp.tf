@@ -25,7 +25,7 @@ terraform {
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = "=2.46.0"
+      version = "=2.77.0"
     }
   }
   backend "azurerm" {
@@ -64,12 +64,12 @@ resource "azurerm_container_registry" "acr" {
   sku                 = "Premium"
   admin_enabled       = true
   
-  # identity {
-  #   type = "UserAssigned"
-  #   identity_ids = [
-  #     azurerm_user_assigned_identity.example.id
-  #   ]
-  # }
+  identity {
+    type = "SystemAssigned, UserAssigned"
+    identity_ids = [
+      azurerm_user_assigned_identity.example.id
+    ]
+  }
 
   # encryption {
     # enabled = false
