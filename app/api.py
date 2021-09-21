@@ -1,18 +1,21 @@
+import os
 from flask import Flask
 from flask import jsonify
 from flask import request
 from applicationinsights.flask.ext import AppInsights
-import os
+from pymongo import MongoClient
 
 
 app_name = 'comentarios'
 app = Flask(app_name)
 app.debug = True
 
-app.config['APPINSIGHTS_INSTRUMENTATIONKEY'] = os.environ.get('APPINSIGHTS_INSTRUMENTATIONKEY')
+app.config['APPINSIGHTS_INSTRUMENTATIONKEY'] = os.environ.get(
+    'APPINSIGHTS_INSTRUMENTATIONKEY')
 appinsights = AppInsights(app)
 
-comments = {}
+client = MongoClient(os.environ.get('MONGO_CONNECTION_STRING'))
+db = client[os.environ.get('MONGO_DB_NAME')]
 
 @app.route('/api/comment/new', methods=['POST'])
 def api_comment_new():
@@ -23,20 +26,19 @@ def api_comment_new():
     content_id = '{}'.format(request_data['content_id'])
 
     new_comment = {
-            'email': email,
-            'comment': comment,
-            }
+        'content_id': content_id,
+        'email': email,
+        'comment': comment,
+    }
 
-    if content_id in comments:
-        comments[content_id].append(new_comment)
-    else:
-        comments[content_id] = [new_comment]
+    db.comments.insert_one(new_comment)
 
-    message = 'comment created and associated with content_id {}'.format(content_id)
+    message = 'comment created and associated with content_id {}'.format(
+        content_id)
     response = {
-            'status': 'SUCCESS',
-            'message': message,
-            }
+        'status': 'SUCCESS',
+        'message': message,
+    }
     return jsonify(response)
 
 
@@ -44,14 +46,16 @@ def api_comment_new():
 def api_comment_list(content_id):
     content_id = '{}'.format(content_id)
 
-    if content_id in comments:
-        return jsonify(comments[content_id])
+    comments = list(db.comments.find({ 'content_id': content_id }, { '_id': 0 }))
+
+    if comments:
+        return jsonify(comments)
     else:
         message = 'content_id {} not found'.format(content_id)
         response = {
-                'status': 'NOT-FOUND',
-                'message': message,
-                }
+            'status': 'NOT-FOUND',
+            'message': message,
+        }
         return jsonify(response), 404
 
 
@@ -59,8 +63,8 @@ def api_comment_list(content_id):
 def health():
 
     response = {
-            'message': 'Healthy!',
-            }
+        'message': 'Healthy!',
+    }
     return jsonify(response), 200
 
 

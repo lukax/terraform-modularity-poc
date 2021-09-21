@@ -14,6 +14,8 @@ locals {
     DOCKER_REGISTRY_SERVER_USERNAME = azurerm_container_registry.acr.admin_username
     DOCKER_REGISTRY_SERVER_PASSWORD = azurerm_container_registry.acr.admin_password
     APPINSIGHTS_INSTRUMENTATIONKEY  = azurerm_application_insights.appinsights.instrumentation_key
+    MONGO_CONNECTION_STRING               = azurerm_cosmosdb_account.db.connection_strings.0
+    MONGO_DB_NAME                         = azurerm_cosmosdb_mongo_database.db.name
   }
 }
 
@@ -45,22 +47,22 @@ provider "azurerm" {
 provider "azuread" {
 }
 
-resource "azurerm_resource_group" "dd" {
+resource "azurerm_resource_group" "rg" {
   name     = "desafio-devops"
   location = "East US"
 }
 
 resource "azurerm_user_assigned_identity" "example" {
-  resource_group_name = azurerm_resource_group.dd.name
-  location            = azurerm_resource_group.dd.location
+  resource_group_name = azurerm_resource_group.rg.name
+  location            = azurerm_resource_group.rg.location
 
   name = "User_ACR_pull"
 }
 
 resource "azurerm_container_registry" "acr" {
   name                = "desafiodevopsacr"
-  resource_group_name = azurerm_resource_group.dd.name
-  location            = azurerm_resource_group.dd.location
+  resource_group_name = azurerm_resource_group.rg.name
+  location            = azurerm_resource_group.rg.location
   sku                 = "Premium"
   admin_enabled       = true
   
@@ -82,8 +84,8 @@ resource "azurerm_container_registry" "acr" {
 # App service plan, define set of computing resources for the web app to run
 resource "azurerm_app_service_plan" "desafio-devops-service-plan" {
   name                = "desafio-devops-service-plan"
-  location            = azurerm_resource_group.dd.location
-  resource_group_name = azurerm_resource_group.dd.name
+  location            = azurerm_resource_group.rg.location
+  resource_group_name = azurerm_resource_group.rg.name
   kind                = "Linux"
   reserved            = true
 
@@ -97,8 +99,8 @@ resource "azurerm_app_service_plan" "desafio-devops-service-plan" {
 # App service 
 resource "azurerm_app_service" "appsvc_default" {
   name                    = "desafio-devops-service-container"
-  location                = azurerm_resource_group.dd.location
-  resource_group_name     = azurerm_resource_group.dd.name
+  location                = azurerm_resource_group.rg.location
+  resource_group_name     = azurerm_resource_group.rg.name
   app_service_plan_id     = azurerm_app_service_plan.desafio-devops-service-plan.id
   https_only              = true
   client_affinity_enabled = true
@@ -127,8 +129,8 @@ resource "azurerm_app_service" "appsvc_default" {
 resource "azurerm_app_service_slot" "appsvc_staging" {
   name                    = "staging"
   app_service_name        = azurerm_app_service.appsvc_default.name
-  location                = azurerm_resource_group.dd.location
-  resource_group_name     = azurerm_resource_group.dd.name
+  location                = azurerm_resource_group.rg.location
+  resource_group_name     = azurerm_resource_group.rg.name
   app_service_plan_id     = azurerm_app_service_plan.desafio-devops-service-plan.id
   https_only              = true
   client_affinity_enabled = true
@@ -157,8 +159,8 @@ resource "azurerm_app_service_slot" "appsvc_staging" {
 resource "azurerm_container_registry_webhook" "webhook_prod" {
   name                = "defaultwebhookprod"
   registry_name       = azurerm_container_registry.acr.name 
-  resource_group_name = azurerm_resource_group.dd.name
-  location            = azurerm_resource_group.dd.location
+  resource_group_name = azurerm_resource_group.rg.name
+  location            = azurerm_resource_group.rg.location
 
   service_uri = "https://${azurerm_app_service.appsvc_default.site_credential.0.username}:${azurerm_app_service.appsvc_default.site_credential.0.password}@${azurerm_app_service.appsvc_default.name}.scm.azurewebsites.net/docker/hook"
   status      = "enabled"
@@ -173,8 +175,8 @@ resource "azurerm_container_registry_webhook" "webhook_prod" {
 resource "azurerm_container_registry_webhook" "webhook_staging" {
   name                = "defaultwebhookstaging"
   registry_name       = azurerm_container_registry.acr.name 
-  resource_group_name = azurerm_resource_group.dd.name
-  location            = azurerm_resource_group.dd.location
+  resource_group_name = azurerm_resource_group.rg.name
+  location            = azurerm_resource_group.rg.location
 
   service_uri = "https://${azurerm_app_service_slot.appsvc_staging.site_credential.0.username}:${azurerm_app_service_slot.appsvc_staging.site_credential.0.password}@${azurerm_app_service.appsvc_default.name}-${azurerm_app_service_slot.appsvc_staging.name}.scm.azurewebsites.net/docker/hook"
   status      = "enabled"
@@ -188,8 +190,41 @@ resource "azurerm_container_registry_webhook" "webhook_staging" {
 # setup monitoring
 resource "azurerm_application_insights" "appinsights" {
   name                = "desafio-devops-appinsights"
-  resource_group_name = azurerm_resource_group.dd.name
-  location            = azurerm_resource_group.dd.location
+  resource_group_name = azurerm_resource_group.rg.name
+  location            = azurerm_resource_group.rg.location
   application_type    = "Node.JS" # Depends on the application
   disable_ip_masking  = true
+}
+
+
+resource "azurerm_cosmosdb_account" "db" {
+  name                = "desafiodevops-cosmos-account"
+  location            = azurerm_resource_group.rg.location
+  resource_group_name = azurerm_resource_group.rg.name
+  offer_type          = "Standard"
+  kind                = "MongoDB"
+  enable_free_tier    = true
+
+  capabilities {
+    name = "MongoDBv3.4"
+  }
+
+  consistency_policy {
+    consistency_level       = "BoundedStaleness"
+    max_interval_in_seconds = 5
+    max_staleness_prefix    = 100
+  }
+
+  geo_location {
+    location          = azurerm_resource_group.rg.location
+    failover_priority = 0
+  }
+  
+}
+
+resource "azurerm_cosmosdb_mongo_database" "db" {
+  name                = "desafio-devops-mongo-db"
+  resource_group_name = azurerm_resource_group.rg.name
+  account_name        = azurerm_cosmosdb_account.db.name
+  throughput          = 400
 }
