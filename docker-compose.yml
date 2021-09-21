@@ -2,7 +2,7 @@ version: "3.3"
    
 services:
   api:
-    image: ldconsulting.azurecr.io/desafio-devops:latest
+    image: desafiodevopsacr.azurecr.io/desafio-devops:latest
     build: 
       context: .
       dockerfile: ./Dockerfile
@@ -10,3 +10,19 @@ services:
       - .:/usr/src
     ports:
       - "8000:8000"
+    depends_on:
+      - mongo_db
+    environment:
+      - MONGO_CONNECTION_STRING=mongodb://mongo_db:27017
+      - MONGO_DB_NAME=desafio_devops_db
+
+  mongo_db:
+    image: mongo:3.4
+    volumes:
+      - ./data/db:/data/db
+    ports:
+        - 27017:27017
+    #command: mongod --smallfiles --logpath=/dev/null # --quiet  
+    environment:
+      - MONGO_DATA_DIR=/data/db
+      - MONGO_LOG_DIR=/dev/null
