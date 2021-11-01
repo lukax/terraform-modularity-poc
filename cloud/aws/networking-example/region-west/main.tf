@@ -1,5 +1,5 @@
 
-resource "aws_vpc" "vpc_b" {
+resource "aws_vpc" "vpc" {
   tags = {
     Name = "r53-lab-vpc"
   }
@@ -7,8 +7,8 @@ resource "aws_vpc" "vpc_b" {
   enable_dns_hostnames = true
 }
 
-resource "aws_subnet" "subnet1a_b" {
-  vpc_id     = aws_vpc.vpc_b.id
+resource "aws_subnet" "subnet1a" {
+  vpc_id     = aws_vpc.vpc.id
   tags = {
     Name = "r53-lab-1a"
   }
@@ -16,52 +16,52 @@ resource "aws_subnet" "subnet1a_b" {
   cidr_block = "172.9.0.0/24"
 }
 
-resource "aws_subnet" "subnet1b_b" {
-  vpc_id     = aws_vpc.vpc_b.id
+resource "aws_subnet" "subnet1b" {
+  vpc_id     = aws_vpc.vpc.id
   tags = {
     Name = "r53-lab-1b"
   }
-  availability_zone = "us-west-1b"
+  availability_zone = "us-west-1c"
   cidr_block = "172.9.1.0/24"
 }
 
-resource "aws_internet_gateway" "igw_b" {
-  vpc_id = aws_vpc.vpc_b.id
+resource "aws_internet_gateway" "igw" {
+  vpc_id = aws_vpc.vpc.id
   tags = {
     Name = "r53-lab-igw"
   }
 }
 
-resource "aws_route_table" "rt_b" {
-  vpc_id = aws_vpc.vpc_b.id
+resource "aws_route_table" "rt" {
+  vpc_id = aws_vpc.vpc.id
   tags = {
     Name = "r53-lab-rt"
   }
 }
 
-resource "aws_route_table_association" "rta-a_b" {
-  subnet_id      = aws_subnet.subnet1a_b.id
-  route_table_id = aws_route_table.rt_b.id
+resource "aws_route_table_association" "rta-a" {
+  subnet_id      = aws_subnet.subnet1a.id
+  route_table_id = aws_route_table.rt.id
 }
 
-resource "aws_route_table_association" "rta-b_b" {
-  subnet_id      = aws_subnet.subnet1b_b.id
-  route_table_id = aws_route_table.rt_b.id
+resource "aws_route_table_association" "rta-b" {
+  subnet_id      = aws_subnet.subnet1b.id
+  route_table_id = aws_route_table.rt.id
 }
 
-resource "aws_route" "r_b" {
+resource "aws_route" "r" {
   destination_cidr_block    = "0.0.0.0/0"
-  gateway_id                = aws_internet_gateway.igw_b.id
-  route_table_id            = aws_route_table.rt_b.id
+  gateway_id                = aws_internet_gateway.igw.id
+  route_table_id            = aws_route_table.rt.id
   depends_on = [
-    aws_route_table.rt_b
+    aws_route_table.rt
   ]
 }
 
-resource "aws_security_group" "sg_b" {
+resource "aws_security_group" "sg" {
   name        = "sg"
   description = "sg"
-  vpc_id      = aws_vpc.vpc_b.id
+  vpc_id      = aws_vpc.vpc.id
 
   ingress = [
     {
@@ -119,28 +119,28 @@ resource "aws_security_group" "sg_b" {
 ##
 ## Create web1-east instance
   # Create elastic network interface
-  resource "aws_network_interface" "eni1_b" {
-    subnet_id       = aws_subnet.subnet1a_b.id
+  resource "aws_network_interface" "eni1" {
+    subnet_id       = aws_subnet.subnet1a.id
     description     = "web1-west eth0"
     private_ips     = ["172.9.0.10"]
-    security_groups = [aws_security_group.sg_b.id]
+    security_groups = [aws_security_group.sg.id]
 
   }
 
-  resource "aws_eip" "web1-eip_b" {
-    network_interface = aws_network_interface.eni1_b.id
+  resource "aws_eip" "web1-eip" {
+    network_interface = aws_network_interface.eni1.id
     depends_on = [
-      aws_internet_gateway.igw_b
+      aws_internet_gateway.igw
     ]
   }
 
-  resource "aws_instance" "web1-east_b" {
-    ami           = local.region_b_ami # us-east-1
-    key_name      = local.region_key_pair
+  resource "aws_instance" "web1-east" {
+    ami           = var.region_ami # us-east-1
+    key_name      = var.region_key_pair
     instance_type = "t2.micro"
     
     network_interface {
-      network_interface_id = aws_network_interface.eni1_b.id
+      network_interface_id = aws_network_interface.eni1.id
       device_index         = 0
       delete_on_termination = false
     }
@@ -152,28 +152,28 @@ resource "aws_security_group" "sg_b" {
 
 ##
 ## Create web2-west instance
-  resource "aws_network_interface" "eni2_b" {
-    subnet_id       = aws_subnet.subnet1b_b.id
+  resource "aws_network_interface" "eni2" {
+    subnet_id       = aws_subnet.subnet1b.id
     description     = "web2-west eth0"
     private_ips     = ["172.9.1.20"]
-    security_groups = [aws_security_group.sg_b.id]
+    security_groups = [aws_security_group.sg.id]
 
   }
 
-  resource "aws_eip" "web2-eip_b" {
-    network_interface = aws_network_interface.eni2_b.id
+  resource "aws_eip" "web2-eip" {
+    network_interface = aws_network_interface.eni2.id
     depends_on = [
-      aws_internet_gateway.igw_b
+      aws_internet_gateway.igw
     ]
   }
 
-  resource "aws_instance" "web2-east_b" {
-    ami           = local.region_b_ami # us-east-1
-    key_name      = local.region_key_pair
+  resource "aws_instance" "web2-east" {
+    ami           = var.region_ami # us-east-1
+    key_name      = var.region_key_pair
     instance_type = "t2.micro"
     
     network_interface {
-      network_interface_id = aws_network_interface.eni2_b.id
+      network_interface_id = aws_network_interface.eni2.id
       device_index         = 0
       delete_on_termination = false
     }

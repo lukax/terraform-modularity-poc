@@ -137,8 +137,8 @@ resource "aws_security_group" "sg" {
   }
 
   resource "aws_instance" "web1-east" {
-    ami           = local.region_a_ami # us-east-1
-    key_name      = local.region_key_pair
+    ami           = var.region_ami # us-east-1
+    key_name      = var.region_key_pair
     instance_type = "t2.micro"
     
     network_interface {
@@ -170,8 +170,8 @@ resource "aws_security_group" "sg" {
   }
 
   resource "aws_instance" "web2-east" {
-    ami           = "ami-48351d32" # us-east-1
-    key_name      = "ccnetkeypair"
+    ami           = var.region_ami # us-east-1
+    key_name      = var.region_key_pair
     instance_type = "t2.micro"
     
     network_interface {
